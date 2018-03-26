@@ -8,7 +8,7 @@ This is the accompanying code of:
 
 ## Dataset availability
 
-At the moment, we can share the dataset to all researchers subscribed to *[BMJ Case Reports](http://casereports.bmj.com/)*. Several universities already have an active institutional subscription, so please check. We can also share the dataset to those with an individual subscription. The subscription for users from Hinari countries is free. To request the dataset, send us an email to *[simon.suster@uantwerpen.be](mailto:simon.suster@uantwerpen.be)*. We are currently discussing with the publisher to make our resource freely available for researcher purposes without requiring a subscription. Any updates regarding availability will be posted here immediately.
+At the moment, we can share the dataset to all researchers subscribed to *[BMJ Case Reports](http://casereports.bmj.com/)*. Several universities already have an active institutional subscription, so please check. We can also share the dataset to those with an individual subscription. The subscription for users from Hinari countries is free. To request the dataset, send us an email to *[simon.suster@uantwerpen.be](mailto:simon.suster@uantwerpen.be)*. We are currently discussing with the publisher to make our resource freely available for research purposes without requiring a subscription. Any updates regarding availability will be posted here immediately.
 
 ## Handling the dataset and baselines
 
@@ -26,7 +26,7 @@ At the moment, we can share the dataset to all researchers subscribed to *[BMJ C
 * [run_emb_baseline.py](dataset-code/run_emb_baseline.py): find the best embedding hyper-parameters by running word2vec
 * [util.py](dataset-code/util.py): various utilities
 
-## Neural readers (modified for CliCR)
+## Neural readers (adapted to CliCR)
 
 To train the Stanford Attentive Reader:
 ```sh
