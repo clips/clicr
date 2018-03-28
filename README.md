@@ -3,7 +3,7 @@
 
 This is the accompanying code of:
 
- *[CliCR: A Dataset of Clinical Case Reports for Machine Reading Comprehension](http://arxiv.org)*. Simon Šuster and Walter Daelemans. NAACL, 2018.
+ *[CliCR: A Dataset of Clinical Case Reports for Machine Reading Comprehension](https://arxiv.org/abs/1803.09720)*. Simon Šuster and Walter Daelemans. NAACL, 2018.
 
 
 ## Dataset availability
