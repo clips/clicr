@@ -10,9 +10,7 @@ This is the accompanying code of:
 
 ## Dataset availability
 
-At the moment, we can share the dataset to all researchers subscribed to *[BMJ Case Reports](http://casereports.bmj.com/)*. Several universities already have an active institutional subscription, so please check. We can also share the dataset to those with an individual subscription. The subscription for users from Hinari countries is free. To request the dataset, send us an email to *[simon.suster@uantwerpen.be](mailto:simon.suster@uantwerpen.be)*. We are currently discussing with the publisher to make our resource freely available for research purposes without requiring a subscription. Any updates regarding availability will be posted here immediately.
-
-***UPDATE 28 May 2018:*** Thanks to an agreement with BMJ, we will be able to share the dataset freely to anybody for research purposes. This agreement is now being finalized, and we expect to be able to make the dataset openly available in a few weeks.
+Thanks to an agreement with the publisher of BMJ Case Reports, we are allowed to freely distribute our dataset for research purposes. Please send us an email to *[simon.suster@uantwerpen.be](mailto:simon.suster@uantwerpen.be)*, and we will provide you with the link.
 
 ## Handling the dataset and baselines
 
