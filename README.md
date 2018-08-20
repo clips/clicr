@@ -14,10 +14,15 @@ Thanks to an agreement with the publisher of BMJ Case Reports, we are allowed to
 
 ## Handling the dataset and baselines
 
+Collect some statistics about the dataset:
+```sh
+python3 dataset-code/describe_data.py -train_file TRAIN_PATH -dev_file DEV_PATH -test_file TEST_PATH
+```
+
+Other:
 * [baselines.py](dataset-code/baselines.py): run and evaluate baseline methods reported in the paper (apart from lang-model)
 * [build_json_dataset.py](dataset-code/build_json_dataset.py): several functions for creating the dataset from BMJ Case Reports (code for scraping and processing HTML data from the web will be added later)
 * [build_queries.py](dataset-code/build_queries.py): creating queries from learning points
-* [describe_data.py](dataset-code/describe_data.py): obtain dataset statistics
 * [embedding_eval.py](dataset-code/embedding_eval.py): embedding metrics for evaluation
 * [evaluate.py](dataset-code/evaluate.py): evaluation code for EM, F1, BLEU-2, BLEU-4, embedding-average
 * [evaluation_test.py](dataset-code/evaluation_test.py): unit test for the evaluation code
