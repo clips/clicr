@@ -1,3 +1,4 @@
+import argparse
 import os
 import re
 from collections import Counter, defaultdict
@@ -48,6 +49,10 @@ def print_data_format():
     """
 
     return data_format
+
+
+def dataset_instance(version, data):
+    return {"version": version, "data": data}
 
 
 def get_different_cuis(dataset_file="/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/dev1.0.json"):
@@ -318,9 +323,9 @@ def plot_article_series():
 
 
 class GeneralStats:
-    def __init__(self, dataset_file="/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/dataset1.0.json"):
+    def __init__(self, dataset_file=None):
         self.dataset_file = dataset_file
-        self.dataset = load_json(self.dataset_file)
+        self.dataset = load_json(self.dataset_file) if self.dataset_file is not None else None
 
     def n_cases(self):
         return len(self.dataset[DATA_KEY])
@@ -608,8 +613,14 @@ class GeneralStats:
         return 100 * n_found / n_all
 
 
-def print_general_stats():
+def print_general_stats(train_file, dev_file, test_file):
+    # combine all train/dev/test first
     stats = GeneralStats()
+    train = load_json(train_file)
+    dev = load_json(dev_file)
+    test = load_json(test_file)
+    stats.dataset = dataset_instance(train[VERSION_KEY], train[DATA_KEY] + dev[DATA_KEY] + test[DATA_KEY])
+
     n_cases = stats.n_cases()
     print("N of cases: {}".format(n_cases))
     n_queries = stats.n_queries()
@@ -630,11 +641,11 @@ def print_general_stats():
     #print("N of entity types (w/o extended): {}".format(stats.n_entities(stats.entities(include_extended=False))))
     print("N of entity types in passages: {}".format(stats.n_entities(stats.entities_passage(lowercase=True))))
 
-    stats_train = GeneralStats("/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/train1.0.json")
+    stats_train = GeneralStats(train_file)
     print("N of queries in train: {}".format(stats_train.n_queries()))
-    stats_dev = GeneralStats("/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/dev1.0.json")
+    stats_dev = GeneralStats(dev_file)
     print("N of queries in dev: {}".format(stats_dev.n_queries()))
-    stats_test = GeneralStats("/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/test1.0.json")
+    stats_test = GeneralStats(test_file)
     print("N of queries in test: {}".format(stats_test.n_queries()))
 
     ans_l = stats.answer_length()
@@ -675,6 +686,13 @@ def misc():
             print(w)
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description='Statistics for the CliCR dataset')
+    parser.add_argument('-train_file', help='Path to the training set in json format.')
+    parser.add_argument('-dev_file', help='Path to the dev set in json format.')
+    parser.add_argument('-test_file', help='Path to the test set in json format.')
+    args = parser.parse_args()
+
     #print(print_data_format())
     #print(percentage_of_ans_in_docs(include_extended=False))
     #get_contexts(downcase=True)
@@ -694,7 +712,7 @@ if __name__ == '__main__':
     #print(plot_article_specialty())
     #print(plot_article_series())
 
-    print_general_stats()
+    print_general_stats(args.train_file, args.dev_file, args.test_file)
     #print_dist()
     #print_year_dist()
     #misc()
