@@ -613,6 +613,50 @@ class GeneralStats:
         return 100 * n_found / n_all
 
 
+def ratio_ans(train_file, dev_file, test_file):
+    """
+    How many answers in dev/test were observed as answers in the training set?
+    """
+    stats_tr = GeneralStats(train_file)
+    stats_de = GeneralStats(dev_file)
+    stats_te = GeneralStats(test_file)
+
+    ans_tr = set(stats_tr.most_frequent_answers(origin="dataset").keys())
+    ans_de = set(stats_de.most_frequent_answers(origin="dataset").keys())
+    ans_te = set(stats_te.most_frequent_answers(origin="dataset").keys())
+
+    common_de = len(ans_tr & ans_de)
+    ratio_de = common_de / len(ans_de)
+    common_te = len(ans_tr & ans_te)
+    ratio_te = common_te / len(ans_te)
+
+    return ratio_de, ratio_te
+
+def ratio_ans_fq(train_file, dev_file, test_file):
+    """
+    For the answers from dev/test that were observed also in the train, what is the mean frequency in the train set,
+    and what is the std?
+    """
+    import numpy as np
+
+    stats_tr = GeneralStats(train_file)
+    stats_de = GeneralStats(dev_file)
+    stats_te = GeneralStats(test_file)
+
+    ans_tr = set(stats_tr.most_frequent_answers(origin="dataset").keys())
+    ans_de = set(stats_de.most_frequent_answers(origin="dataset").keys())
+    ans_te = set(stats_te.most_frequent_answers(origin="dataset").keys())
+
+    common_de = ans_tr & ans_de
+    fq_wrt_de = [fq for ans, fq in stats_tr.most_frequent_answers(origin="dataset").items() if ans in common_de]
+    common_te = ans_tr & ans_te
+    fq_wrt_te = [fq for ans, fq in stats_tr.most_frequent_answers(origin="dataset").items() if ans in common_te]
+
+    de_mean, de_median, de_std = np.mean(fq_wrt_de), np.median(fq_wrt_de), np.std(fq_wrt_de)
+    te_mean, te_median, te_std = np.mean(fq_wrt_te), np.median(fq_wrt_te), np.std(fq_wrt_te)
+
+    return de_mean, de_median, de_std, te_mean, te_median, te_std
+
 def print_general_stats(train_file, dev_file, test_file):
     # combine all train/dev/test first
     stats = GeneralStats()
@@ -713,6 +757,8 @@ if __name__ == '__main__':
     #print(plot_article_series())
 
     print_general_stats(args.train_file, args.dev_file, args.test_file)
+    #print(ratio_ans(args.train_file, args.dev_file, args.test_file))
+    #print(ratio_ans_fq(args.train_file, args.dev_file, args.test_file))
     #print_dist()
     #print_year_dist()
     #misc()
