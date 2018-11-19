@@ -1,4 +1,5 @@
 import argparse
+import sys
 
 from describe_data import *
 from util import load_json
@@ -8,7 +9,7 @@ def remove_entity_marks(txt):
     return txt.replace("BEG__", "").replace("__END", "")
 
 
-def to_entities(text):
+def to_entities(text, ent_marker="@entity"):
     """
     Text includes entities marked as BEG__w1 w2 w3__END. Transform to a single entity @entityw1_w2_w3.
     """
@@ -18,7 +19,7 @@ def to_entities(text):
         w_stripped = w.strip()
         if w_stripped.startswith("BEG__") and w_stripped.endswith("__END"):
             concept = [w_stripped.split("_")[2]]
-            word_list.append("@entity" + "_".join(concept))
+            word_list.append(ent_marker + "_".join(concept))
             if inside:  # something went wrong, leave as is
                 print("Inconsistent markup.")
         elif w_stripped.startswith("BEG__"):
@@ -27,11 +28,11 @@ def to_entities(text):
             concept = [w_stripped.split("_", 2)[-1]]
         elif w_stripped.endswith("__END"):
             if not inside:
-                return None
-            assert inside
-            concept.append(w_stripped.rsplit("_", 2)[0])
-            word_list.append("@entity" + "_".join(concept))
-            inside = False
+                word_list.append(w_stripped[:-5])
+            else:
+                concept.append(w_stripped.rsplit("_", 2)[0])
+                word_list.append(ent_marker + "_".join(concept))
+                inside = False
         else:
             if inside:
                 concept.append(w_stripped)
@@ -178,6 +179,30 @@ def map_to_split_name(f_dataset):
         raise ValueError
 
     return name
+
+
+def clicr_to_concept_txt(train_file="/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/train1.0.json", out_file="/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/train1.0_concepts.txt"):
+    """
+    Prepare a single txt file with entities marked as @ent_a_b. One sentence per line, lowercased
+    """
+    dataset = load_json(train_file)
+    with open(out_file, "w") as out_f:
+        for datum in dataset[DATA_KEY]:
+            for l in datum[DOC_KEY][TITLE_KEY].split("\n"):
+                if not l.strip():
+                    continue
+                out_f.write(to_entities(l, ent_marker="@ent_").lower()+"\n")
+            for l in datum[DOC_KEY][CONTEXT_KEY].split("\n"):
+                if not l.strip():
+                    continue
+                out_f.write(to_entities(l, ent_marker="@ent_").lower()+"\n")
+            for qa in datum[DOC_KEY][QAS_KEY]:
+                q = qa[QUERY_KEY]
+                for a in qa[ANS_KEY]:
+                    if a["origin"] == "dataset":
+                        q = q.replace("@placeholder", a[TXT_KEY])
+                out_f.write(to_entities(q, ent_marker="@ent_").lower()+"\n")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
