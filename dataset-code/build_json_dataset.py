@@ -192,6 +192,50 @@ def intersect_datasets_on_ids(dataset1, dataset2):
     return dataset_instance(data1[VERSION_KEY], new_data)
 
 
+def split_test(train_file, test_file):
+    """
+    Split the test set based on whether the answer entity was observed in the training data or not.
+    """
+    # Get the set of answers in the training set
+    stats_tr = GeneralStats(train_file)
+    ans_tr = set(stats_tr.most_frequent_answers(origin="dataset").keys())
+
+    data = load_json(test_file)
+    new_data_seen, new_data_unseen = [], []
+    size_seen, size_unseen = 0, 0
+
+    # reduce data based on answers in answers_seen
+    for datum in data[DATA_KEY]:
+        qas_seen = []
+        qas_unseen = []
+        for qa in datum[DOC_KEY][QAS_KEY]:
+            ans = ""
+            for a in qa[ANS_KEY]:
+                if a[ORIG_KEY] == "dataset":
+                    ans = a[TXT_KEY]
+            assert ans
+            if ans in ans_tr:
+                qas_seen.append(qa)
+            else:
+                qas_unseen.append(qa)
+        assert qas_seen + qas_unseen
+        if qas_seen:
+            size_seen += len(qas_seen)
+            new_doc = document_instance(datum[DOC_KEY][CONTEXT_KEY], datum[DOC_KEY][TITLE_KEY], qas_seen)
+            new_data_seen.append(datum_instance(new_doc, datum[SOURCE_KEY]))
+        if qas_unseen:
+            size_unseen += len(qas_unseen)
+            new_doc = document_instance(datum[DOC_KEY][CONTEXT_KEY], datum[DOC_KEY][TITLE_KEY], qas_unseen)
+            new_data_unseen.append(datum_instance(new_doc, datum[SOURCE_KEY]))
+
+    print("Size of the seen test dataset: {}".format(size_seen))
+    print("Size of the unseen test dataset: {}".format(size_unseen))
+    dataset_seen = dataset_instance(dataset[VERSION_KEY], new_data_seen)
+    dataset_unseen = dataset_instance(dataset[VERSION_KEY], new_data_unseen)
+
+    return dataset_seen, dataset_unseen
+
+
 def is_intersect_same(dataset1, dataset2):
     """
     Check
