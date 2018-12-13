@@ -230,8 +230,8 @@ def split_test(train_file, test_file):
 
     print("Size of the seen test dataset: {}".format(size_seen))
     print("Size of the unseen test dataset: {}".format(size_unseen))
-    dataset_seen = dataset_instance(dataset[VERSION_KEY], new_data_seen)
-    dataset_unseen = dataset_instance(dataset[VERSION_KEY], new_data_unseen)
+    dataset_seen = dataset_instance(data[VERSION_KEY], new_data_seen)
+    dataset_unseen = dataset_instance(data[VERSION_KEY], new_data_unseen)
 
     return dataset_seen, dataset_unseen
 
