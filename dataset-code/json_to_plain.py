@@ -87,13 +87,39 @@ def write_sareader(i, fh_out):
     fh_out.write(i["p"] + "\n")
     fh_out.write(i["id"] + "\n\n")
 
+def write_cnnlike(i, fh_out):
+    """
+            :param i: {"id": "",
+                          "p": "",
+                          "q", "",
+                          "a", "",
+                          "c", [""]}
+        """
+    def rename_ents(txt, c_d):
+        out_txt = []
+        for tok in txt.split():
+            if tok.startswith("@entity"):
+                ent_id = c_d[tok[len("@entity"):]]
+                out_txt.append("@entity{}".format(ent_id))
+            else:
+                out_txt.append(tok)
+        return " ".join(out_txt)
+
+    #ent_to_id(i["c"])
+    c_d = {"@entity{}".format(cnt): e[len("@entity"):] for cnt, e in enumerate(i["c"])}
+    q = rename_ents(i["q"], c_d)
+    fh_out.write(i["q"] + "\n")
+    fh_out.write(plain_to_ent(i["a"]) + "\n")
+    fh_out.write(i["p"] + "\n")
+    fh_out.write(i["id"] + "\n\n")
+
 
 class JsonDataset:
     def __init__(self, dataset_file):
         self.dataset_file = dataset_file
         self.dataset = load_json(self.dataset_file)
 
-    def json_to_plain(self, remove_notfound=False, stp="no-ent"):
+    def json_to_plain(self, remove_notfound=False, stp="no-ent", include_q_cands=False):
         """
         :param stp: no-ent | ent; whether to mark entities in passage; if ent, a multiword entity is treated as 1 token
         :return: {"id": "",
@@ -105,8 +131,9 @@ class JsonDataset:
         for datum in self.dataset[DATA_KEY]:
             for qa in datum[DOC_KEY][QAS_KEY]:
                 fields = {}
+                qa_txt_option = (" " + qa[QUERY_KEY]) if include_q_cands else ""
                 cand = [w for w in to_entities(datum[DOC_KEY][TITLE_KEY] + " " +
-                                               datum[DOC_KEY][CONTEXT_KEY]).lower().split() if w.startswith('@entity')]
+                                               datum[DOC_KEY][CONTEXT_KEY] + qa_txt_option).lower().split() if w.startswith('@entity')]
                 if stp == "no-ent":
                     c = {ent_to_plain(e) for e in set(cand)}
                     a = ""
@@ -210,7 +237,7 @@ if __name__ == "__main__":
     parser.add_argument('-dataset_dir', default="/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_json_concept_annotated/")
     parser.add_argument("-out_dir", default="/mnt/b5320167-5dbd-4498-bf34-173ac5338c8d/Datasets/bmj_case_reports_data/dataset_plain/")
     parser.add_argument("-stp", help="(ent | no-ent)")
-    parser.add_argument("-reader", help="(gareader | sareader)")
+    parser.add_argument("-reader", help="(gareader | sareader | cnnlike)")
     args = parser.parse_args()
 
     out_dir = "{}/{}/{}/".format(args.out_dir, args.stp, args.reader)
@@ -250,3 +277,18 @@ if __name__ == "__main__":
                 for inst in d.json_to_plain(remove_notfound=remove_notfound, stp=args.stp):
                     write_sareader(inst, fh_out=fh_out)
 
+    elif args.reader == "cnnlike":
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
+        for f_dataset in ["train1.0.json"]:
+            d = JsonDataset(args.dataset_dir + f_dataset)
+            remove_notfound = True
+            with open(out_dir + map_to_split_name(f_dataset), "w") as fh_out:
+                for inst in d.json_to_plain(remove_notfound=remove_notfound, stp=args.stp, include_q_cands=True):
+                    write_cnnlike(inst, fh_out=fh_out)
+        for f_dataset in ["dev1.0.json", "test1.0.json"]:
+            d = JsonDataset(args.dataset_dir + f_dataset)
+            remove_notfound = False
+            with open(out_dir + map_to_split_name(f_dataset), "w") as fh_out:
+                for inst in d.json_to_plain(remove_notfound=remove_notfound, stp=args.stp, include_q_cands=True):
+                    write_cnnlike(inst, fh_out=fh_out)
