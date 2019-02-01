@@ -87,7 +87,7 @@ def write_sareader(i, fh_out):
     fh_out.write(i["p"] + "\n")
     fh_out.write(i["id"] + "\n\n")
 
-def write_cnnlike(i, fh_out):
+def write_cnnlike(i, f_out):
     """
             :param i: {"id": "",
                           "p": "",
@@ -105,13 +105,20 @@ def write_cnnlike(i, fh_out):
                 out_txt.append(tok)
         return " ".join(out_txt)
 
-    #ent_to_id(i["c"])
-    c_d = {"@entity{}".format(cnt): e[len("@entity"):] for cnt, e in enumerate(i["c"])}
-    q = rename_ents(i["q"], c_d)
-    fh_out.write(i["q"] + "\n")
-    fh_out.write(plain_to_ent(i["a"]) + "\n")
-    fh_out.write(i["p"] + "\n")
-    fh_out.write(i["id"] + "\n\n")
+    c_d = {e[len("@entity"):]: cnt for cnt, e in enumerate(set(i["c"]))}
+    with open(f_out, "w") as fh_out:
+        fh_out.write(i["id"] + "\n\n")
+        p = rename_ents(i["p"], c_d)
+        fh_out.write(p + "\n\n")
+        q = rename_ents(i["q"], c_d)
+        fh_out.write(q + "\n\n")
+        # add answer to candidates when the answer not found in passage
+        if i["a"][len("@entity"):] not in c_d:
+            c_d[i["a"][len("@entity"):]] = len(c_d)
+        a = rename_ents(i["a"], c_d)
+        fh_out.write(a + "\n\n")
+        c = ["{}:{}".format(rename_ents(cand, c_d), cand[len("@entity"):]) for cand in i["c"]]
+        fh_out.write("\n".join(c) + "\n")
 
 
 class JsonDataset:
@@ -278,17 +285,19 @@ if __name__ == "__main__":
                     write_sareader(inst, fh_out=fh_out)
 
     elif args.reader == "cnnlike":
-        if not os.path.exists(out_dir):
-            os.makedirs(out_dir)
+        if not os.path.exists(out_dir + "test"):
+            os.makedirs(out_dir + "test")
+        if not os.path.exists(out_dir + "train"):
+            os.makedirs(out_dir + "train")
+        if not os.path.exists(out_dir + "dev"):
+            os.makedirs(out_dir + "dev")
         for f_dataset in ["train1.0.json"]:
             d = JsonDataset(args.dataset_dir + f_dataset)
             remove_notfound = True
-            with open(out_dir + map_to_split_name(f_dataset), "w") as fh_out:
-                for inst in d.json_to_plain(remove_notfound=remove_notfound, stp=args.stp, include_q_cands=True):
-                    write_cnnlike(inst, fh_out=fh_out)
+            for inst in d.json_to_plain(remove_notfound=remove_notfound, stp=args.stp, include_q_cands=True):
+                write_cnnlike(inst, f_out=out_dir + f_dataset[:-len("1.0.json")] + "/" + inst["id"] + ".question")
         for f_dataset in ["dev1.0.json", "test1.0.json"]:
             d = JsonDataset(args.dataset_dir + f_dataset)
             remove_notfound = False
-            with open(out_dir + map_to_split_name(f_dataset), "w") as fh_out:
-                for inst in d.json_to_plain(remove_notfound=remove_notfound, stp=args.stp, include_q_cands=True):
-                    write_cnnlike(inst, fh_out=fh_out)
+            for inst in d.json_to_plain(remove_notfound=remove_notfound, stp=args.stp, include_q_cands=True):
+                write_cnnlike(inst, f_out=out_dir + f_dataset[:-len("1.0.json")] + "/" + inst["id"] + ".question")
