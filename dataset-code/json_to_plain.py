@@ -87,6 +87,7 @@ def write_sareader(i, fh_out):
     fh_out.write(i["p"] + "\n")
     fh_out.write(i["id"] + "\n\n")
 
+
 def write_cnnlike(i, f_out):
     """
             :param i: {"id": "",
@@ -139,8 +140,11 @@ class JsonDataset:
             for qa in datum[DOC_KEY][QAS_KEY]:
                 fields = {}
                 qa_txt_option = (" " + qa[QUERY_KEY]) if include_q_cands else ""
+                #cand = [w for w in to_entities(datum[DOC_KEY][TITLE_KEY] + " " +
+                #                               datum[DOC_KEY][CONTEXT_KEY] + qa_txt_option).lower().split() if w.startswith('@entity')]
                 cand = [w for w in to_entities(datum[DOC_KEY][TITLE_KEY] + " " +
-                                               datum[DOC_KEY][CONTEXT_KEY] + qa_txt_option).lower().split() if w.startswith('@entity')]
+                                               datum[DOC_KEY][CONTEXT_KEY]).lower().split() if w.startswith('@entity')]
+                cand_q = [w for w in to_entities(qa_txt_option).lower().split() if w.startswith('@entity')]
                 if stp == "no-ent":
                     c = {ent_to_plain(e) for e in set(cand)}
                     a = ""
@@ -168,6 +172,7 @@ class JsonDataset:
 
                 elif stp == "ent":
                     c = set(cand)
+                    c_q = set(cand_q)
                     a = ""
                     for ans in qa[ANS_KEY]:
                         if ans[ORIG_KEY] == "dataset":
@@ -183,7 +188,7 @@ class JsonDataset:
                                         a = umls_answer
                             if not found_umls:
                                 continue
-                    fields["c"] = list(c)
+                    fields["c"] = list(c) + list(c_q)
                     assert a
                     fields["a"] = a
                     document = to_entities(datum[DOC_KEY][TITLE_KEY] + " " + datum[DOC_KEY][CONTEXT_KEY]).replace(
@@ -264,6 +269,7 @@ if __name__ == "__main__":
 
         for f_dataset in ["dev1.0.json", "test1.0.json"]:
             d = JsonDataset(args.dataset_dir + f_dataset)
+            #remove_notfound = False
             remove_notfound = False
             for inst in d.json_to_plain(remove_notfound=remove_notfound, stp=args.stp):
                 write_gareader(inst, f_out=out_dir + map_to_split_name(f_dataset) + "/" + inst["id"] + ".question")
@@ -298,6 +304,6 @@ if __name__ == "__main__":
                 write_cnnlike(inst, f_out=out_dir + f_dataset[:-len("1.0.json")] + "/" + inst["id"] + ".question")
         for f_dataset in ["dev1.0.json", "test1.0.json"]:
             d = JsonDataset(args.dataset_dir + f_dataset)
-            remove_notfound = False
+            remove_notfound = True
             for inst in d.json_to_plain(remove_notfound=remove_notfound, stp=args.stp, include_q_cands=True):
                 write_cnnlike(inst, f_out=out_dir + f_dataset[:-len("1.0.json")] + "/" + inst["id"] + ".question")
