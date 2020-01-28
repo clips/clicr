@@ -10,7 +10,7 @@ This is the accompanying code of:
 
 ## Dataset availability
 
-Thanks to an agreement with the publisher of BMJ Case Reports, we are allowed to freely distribute our dataset for research purposes. Please send us an email to *[simon.suster@uantwerpen.be](mailto:simon.suster@uantwerpen.be)*, and we will provide you with the link.
+Thanks to an agreement with the publisher of BMJ Case Reports, we are allowed to freely distribute our dataset for research purposes. Please send us an email to *[simon.suster@unimelb.edu.au](mailto:simon.suster@unimelb.edu.au)*, and we will provide you with the link.
 
 ## Handling the dataset and baselines
 
